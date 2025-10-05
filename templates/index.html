@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirWatch Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        /* Add this style to ensure the map displays correctly */
+        #map { height: 450px; border-radius: 0.5rem; }
+    </style>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #334155; /* Default text color */
+        }
+        .main-content {
+            background-color: #f8fafc;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+        
+        /* Top Navigation Links */
+        .top-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            color: #475569;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .top-nav-link.active {
+            background-color: #e0f2fe; /* Light blue background */
+            color: #0ea5e9; /* Sky blue text */
+            font-weight: 600;
+        }
+        .top-nav-link:hover:not(.active) {
+            background-color: #f0f4f8; /* Light gray on hover */
+        }
+
+        .header-button {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 0.75rem 1.25rem; /* Slightly bigger padding */
+            border-radius: 0.5rem;
+            color: #475569;
+            font-size: 0.95rem; /* Slightly bigger font */
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .header-button:hover {
+            background-color: #f8fafc;
+        }
+
+        .alert-dot {
+            position: absolute;
+            top: -6px; /* Adjusted position */
+            right: -6px; /* Adjusted position */
+            width: 24px; /* Bigger */
+            height: 24px; /* Bigger */
+            background-color: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .pollutant-btn {
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            transition: all 0.2s;
+            display: flex; /* To align text and info icon */
+            align-items: center;
+            gap: 0.35rem; /* Space between text and icon */
+        }
+        .pollutant-btn.active {
+            background-color: #e0f2fe;
+            color: #0ea5e9;
+            border-color: #0ea5e9;
+            font-weight: 600;
+        }
+
+        /* Level-specific colors */
+        .level-moderate { color: #f59e0b; } /* Amber */
+        .level-good { color: #22c55e; }     /* Green */
+        .level-unhealthy-sensitive { color: #f97316; } /* Orange */
+        .level-unhealthy { color: #ef4444; } /* Red */
+        .level-very-unhealthy { color: #a855f7; } /* Purple */
+        .level-hazardous { color: #78350f; } /* Brown */
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; /* Slate 100 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* Slate 300 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* Slate 400 */
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <header class="bg-white border-b border-gray-200 flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+        <!-- Logo on the left -->
+        <div class="flex items-center gap-3">
+            <i class="fas fa-wind text-2xl text-sky-500"></i>
+            <h1 class="text-xl font-bold text-slate-800">AirWatch</h1>
+        </div>
+
+        <!-- Navigation on the right -->
+        <nav class="flex items-center space-x-2">
+            <a href="#" class="top-nav-link active">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/school" class="top-nav-link">
+                <i class="fas fa-chart-line mr-2"></i>
+                <span>School Insights</span>
+            </a>
+            <a href="#" class="top-nav-link">
+                <i class="fas fa-map-marked-alt mr-2"></i>
+                <span>Visualized Map</span>
+            </a>
+        </nav>
+    </header>
+
+    <main class="main-content flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+        <div class="max-w-7xl mx-auto">
+            
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                <div>
+                    <div class="flex items-center gap-2 text-slate-500 mb-1">
+                        <i class="fas fa-map-marker-alt text-xl"></i>
+                        <span id="location-text" class="text-2xl sm:text-3xl font-bold text-slate-800">Loading...</span>
+                    </div>
+                    <p id="coordinates" class="text-sm text-slate-400 ml-7">Loading...</p>
+                </div>
+                <div class="flex items-center gap-4 mt-4 sm:mt-0">
+                    <button class="header-button">
+                        <i class="far fa-clock"></i>
+                        <span id="local-time">--:--</span> Local Time
+                    </button>
+                    <button id="change-location-btn" class="header-button">
+                        <i class="fas fa-map-pin"></i>
+                        Change Location
+                    </button>
+                    <button id="alerts-btn" class="header-button relative">
+                        <i class="far fa-bell"></i>
+                        Alerts
+                        <div id="alert-dot" class="alert-dot hidden"></div> 
+                    </button>
+                </div>
+            </header>
+
+            <section class="card p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-semibold text-slate-800">Air Quality Forecast</h2>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                            <i class="fas fa-circle text-xxs"></i> LIVE
+                        </span>
+                    </div>
+                    <p class="text-sm text-slate-400">Source: NASA Tempo + WeatherAPI</p>
+                </div>
+
+                <div class="flex gap-2 mb-6" id="pollutant-selector">
+                    <button class="pollutant-btn active px-4 py-2 rounded-lg" data-pollutant="PM2.5">PM2.5 <i class="fas fa-info-circle text-sm ml-1 text-slate-400"></i></button>
+                    <button class="pollutant-btn px-4 py-2 rounded-lg" data-pollutant="NO2">NO2 <i class="fas fa-info-circle text-sm ml-1 text-slate-400"></i></button>
+                    <button class="pollutant-btn px-4 py-2 rounded-lg" data-pollutant="O3">O3 <i class="fas fa-info-circle text-sm ml-1 text-slate-400"></i></button>
+                    <button class="pollutant-btn px-4 py-2 rounded-lg" data-pollutant="HCHO">HCHO <i class="fas fa-info-circle text-sm ml-1 text-slate-400"></i></button>
+                </div>
+
+                <div>
+                    <p class="text-4xl font-bold text-slate-800">
+                        <span id="current-aqi">--</span>
+                    </p>
+                    <p class="text-lg font-medium" id="aqi-level">Loading...</p>
+                </div>
+
+            <div class="h-64 mt-4 relative">
+                <div id="chart-loading-overlay" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white bg-opacity-75 backdrop-blur-sm hidden">
+                    <i class="fas fa-spinner fa-spin text-sky-500 text-4xl mb-4"></i>
+                    <p class="font-bold text-slate-700">Initializing model....</p>
+                    <p class="text-sm text-slate-500">May take about 1 - 2 minutes...</p>
+                </div>
+                <canvas id="aqiChart"></canvas>
+            </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 card p-6">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-1">Health Guidance</h3>
+                    <p class="text-slate-500 mb-4">AQI <span id="guidance-aqi-level-val">--</span> - <span id="guidance-aqi-level-text">Loading...</span></p>
+                    <ul class="space-y-3" id="health-guidance-list">
+                        <li class="p-4 bg-slate-50 rounded-lg animate-pulse h-10"></li>
+                         <li class="p-4 bg-slate-50 rounded-lg animate-pulse h-10"></li>
+                         <li class="p-4 bg-slate-50 rounded-lg animate-pulse h-10"></li>
+                    </ul>
+                     <p class="text-center text-xs text-slate-400 mt-6">Auto-updated based on current air quality.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Weather</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-3 text-slate-600">
+                                <i class="fas fa-thermometer-half text-sky-500"></i>
+                                <span>Temperature</span>
+                            </div>
+                            <p class="font-bold text-slate-800"><span id="temp-val">--</span> °C</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-3 text-slate-600">
+                                <i class="fas fa-wind text-sky-500"></i>
+                                <span>Wind Speed</span>
+                            </div>
+                            <p class="font-bold text-slate-800"><span id="wind-val">--</span> km/h</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-3 text-slate-600">
+                                <i class="fas fa-cloud-showers-heavy text-sky-500"></i>
+                                <span>Precipitation</span>
+                            </div>
+                            <p class="font-bold text-slate-800"><span id="precip-val">--</span> mm</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let aqiChart;
+            let airQualityDataStore;
+            let activePollutant = 'PM2.5';
+            let pollutantInfoStore;
+
+            const levelColorMap = {
+                'Good': 'level-good',
+                'Moderate': 'level-moderate',
+                'Unhealthy for Sensitive Groups': 'level-unhealthy-sensitive',
+                'Unhealthy': 'level-unhealthy',
+                'Very Unhealthy': 'level-very-unhealthy',
+                'Hazardous': 'level-hazardous'
+            };
+
+            const chartColorMap = {
+                'Good': '#22c55e',
+                'Moderate': '#f59e0b',
+                'Unhealthy for Sensitive Groups': '#f97316',
+                'Unhealthy': '#ef4444',
+                'Very Unhealthy': '#a855f7',
+                'Hazardous': '#78350f'
+            }
+
+            // Fetch and display location data
+            // --- START: NEW LOCATION LOGIC ---
+
+    // This is the core function to fetch and display location data.
+    // It now handles both 'initial' and 'update' modes.
+    function fetchLocationData(mode, latitude = 0, longitude = 0) {
+        const url = `/api/location-data/${mode}/${latitude}/${longitude}`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update the UI with the new data
+                document.getElementById('location-text').textContent = `${data.city}, ${data.state}`;
+                document.getElementById('coordinates').textContent = `${data.lat}, ${data.lon}`;
+                document.getElementById('local-time').textContent = data.local_time;
+
+                // If the mode was an 'update', we store the new coordinates in sessionStorage
+                if (mode === 'update') {
+                    sessionStorage.setItem('userLatitude', latitude);
+                    sessionStorage.setItem('userLongitude', longitude);
+                }
+                
+                // You might want to re-fetch weather and AQI data here as well
+                fetchWeatherData(data.lat, data.lon);
+                fetchAirQualityData(mode, data.lat, data.lon);
+            })
+            .catch(error => {
+                console.error('Error fetching location data:', error);
+                document.getElementById('location-text').textContent = 'Error loading location';
+            });
+    }
+
+            // This function will be called when the page loads.
+            function initializeDashboard() {
+                const storedLat = sessionStorage.getItem('userLatitude');
+                const storedLon = sessionStorage.getItem('userLongitude');
+
+                // If coordinates are found in sessionStorage, use them.
+                if (storedLat && storedLon) {
+                    fetchLocationData('same', storedLat, storedLon);
+                } else {
+                    // Otherwise, fetch the default initial location.
+                    fetchLocationData('initial');
+                }
+            }
+            // Fetch and display weather data
+            function fetchWeatherData(lat, lon){
+                fetch(`/api/weather-data/${lat}/${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('temp-val').textContent = data.temperature;
+                        document.getElementById('wind-val').textContent = data.wind_speed;
+                        document.getElementById('precip-val').textContent = data.precipitation;
+                    });
+            }
+            // Fetch air quality data
+            function fetchAirQualityData(mode, lat, lon){
+                fetch(`/api/air-quality-data/${mode}/${lat}/${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('chart-loading-overlay').classList.add('hidden');
+
+                        airQualityDataStore = data;
+                        updateDashboard(activePollutant);
+                        // Initial guidance update for PM2.5
+                        updateHealthGuidance(data.guidance, data.pollutants['PM2.5'].level, data.pollutants['PM2.5'].current);
+                        fetchNotifications(lat, lon); 
+                    })
+                    .catch(error => console.error('Error fetching air quality data:', error));
+        }
+            initializeDashboard();
+            
+            // Function to update all dashboard elements
+            function updateDashboard(pollutant) {
+                if (!airQualityDataStore || !airQualityDataStore.pollutants[pollutant]) return;
+                
+                const pollutantData = airQualityDataStore.pollutants[pollutant];
+                
+                // Update current value and level text
+                document.getElementById('current-aqi').textContent = pollutantData.current;
+                const aqiLevelEl = document.getElementById('aqi-level');
+                aqiLevelEl.textContent = pollutantData.level;
+                
+                // Update level color
+                aqiLevelEl.className = 'text-lg font-medium'; // Reset classes
+                const colorClass = levelColorMap[pollutantData.level] || 'text-slate-500';
+                aqiLevelEl.classList.add(colorClass);
+
+                // Update chart
+                renderChart(pollutantData.forecast, pollutantData.level);
+
+                // Guidance always reflects PM2.5, as per original image behavior
+                const pm25Data = airQualityDataStore.pollutants['PM2.5'];
+                updateHealthGuidance(airQualityDataStore.guidance, pm25Data.level, pm25Data.current);
+            }
+
+            // Function to update health guidance section
+            function updateHealthGuidance(guidance, level, aqiValue) {
+                document.getElementById('guidance-aqi-level-val').textContent = aqiValue;
+                const guidanceLevelText = document.getElementById('guidance-aqi-level-text');
+                guidanceLevelText.textContent = level;
+
+                // Update color for guidance level text
+                guidanceLevelText.className = ''; // Reset classes
+                const colorClass = levelColorMap[level] || 'text-slate-500';
+                guidanceLevelText.classList.add(colorClass, 'font-semibold');
+
+                const list = document.getElementById('health-guidance-list');
+                list.innerHTML = '';
+                if (guidance && guidance.length > 0) {
+                    guidance.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = "flex items-center gap-3 p-4 bg-slate-50 rounded-lg";
+                        li.innerHTML = `
+                            <div class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-sm"></i>
+                            </div>
+                            <span class="text-slate-700">${item}</span>
+                        `;
+                        list.appendChild(li);
+                    });
+                } else {
+                    list.innerHTML = `<li class="p-4 text-slate-500 text-center">No specific guidance available for this level.</li>`;
+                }
+            }
+
+            // Function to render/update the chart
+            function renderChart(forecastData, level) {
+                const ctx = document.getElementById('aqiChart').getContext('2d');
+                const labels = forecastData.map(d => {
+                    const date = new Date(d.time); // Attempt to parse for consistent format
+                    // If d.time is just a time string, we might need to adjust parsing
+                    return d.time; // Keep original format for now
+                });
+                const dataPoints = forecastData.map(d => d.value);
+
+                const chartColor = chartColorMap[level] || '#f59e0b';
+
+                if (aqiChart) {
+                    aqiChart.destroy();
+                }
+
+                aqiChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'µg/m³',
+                            data: dataPoints,
+                            borderColor: chartColor,
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            pointBackgroundColor: chartColor,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            borderWidth: 3,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: '#fff',
+                                titleColor: '#334155',
+                                bodyColor: '#475569',
+                                borderColor: '#e2e8f0',
+                                borderWidth: 1,
+                                padding: 10,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label; // Displays the time as tooltip title
+                                    },
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    drawBorder: false,
+                                    color: '#e2e8f0'
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    callback: function(value, index, ticks) {
+                                        return value + 'µg/m³';
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    maxTicksLimit: 8,
+                                    autoSkipPadding: 10
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            // --- ADDED CODE START ---
+// Function to display a loading state on the dashboard
+function showLoadingState() {
+    // Update header location info
+    document.getElementById('location-text').textContent = 'Loading...';
+    document.getElementById('coordinates').textContent = 'Fetching coordinates...';
+    document.getElementById('local-time').textContent = '--:--';
+
+    // Reset AQI display
+    document.getElementById('current-aqi').textContent = '--';
+    document.getElementById('aqi-level').textContent = 'Loading...';
+    document.getElementById('aqi-level').className = 'text-lg font-medium'; // Reset color
+
+    // Reset Weather display
+    document.getElementById('temp-val').textContent = '--';
+    document.getElementById('wind-val').textContent = '--';
+    document.getElementById('precip-val').textContent = '--';
+
+    // Reset Health Guidance
+    document.getElementById('guidance-aqi-level-val').textContent = '--';
+    document.getElementById('guidance-aqi-level-text').textContent = 'Loading...';
+    document.getElementById('health-guidance-list').innerHTML = `
+        <li class="p-4 bg-slate-50 rounded-lg animate-pulse h-10"></li>
+        <li class="p-4 bg-slate-50 rounded-lg animate-pulse h-10"></li>
+        <li class="p-4 bg-slate-50 rounded-lg animate-pulse h-10"></li>
+    `;
+    
+    // Destroy the old chart so it can be redrawn with new data
+    if (aqiChart) {
+        aqiChart.destroy();
+    }
+        document.getElementById('chart-loading-overlay').classList.remove('hidden');
+
+}
+// --- ADDED CODE END ---
+            // Location: Inside the <script> tag, after the showLoadingState() function
+const pollutantInfoOverlay = document.getElementById('pollutant-info-overlay');
+    const closeInfoBtn = document.getElementById('close-info-btn');
+    const infoTitle = document.getElementById('info-pollutant-title');
+    const infoName = document.getElementById('info-pollutant-name');
+    const infoRisksList = document.getElementById('info-health-risks');
+    
+    // Function to fetch pollutant details from your Flask backend
+    function fetchPollutantInfo() {
+        // Only fetch if the data hasn't been fetched before
+        if (pollutantInfoStore) {
+            return Promise.resolve(pollutantInfoStore);
+        }
+        return fetch('/api/pollutant-info')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                pollutantInfoStore = data; // Cache the data
+                return data;
+            })
+            .catch(error => console.error('Error fetching pollutant info:', error));
+    }
+
+    // Function to populate and display the overlay
+    function displayPollutantInfo(pollutantKey) {
+        if (!pollutantInfoStore || !pollutantInfoStore[pollutantKey]) {
+            console.error('Info for pollutant not found:', pollutantKey);
+            return;
+        }
+
+        const data = pollutantInfoStore[pollutantKey];
+
+        // Populate the content
+        infoTitle.textContent = pollutantKey;
+        infoName.textContent = data.name;
+        
+        // Clear old risks and add new ones
+        infoRisksList.innerHTML = '';
+        data.risks.forEach(risk => {
+            const li = document.createElement('li');
+            li.className = "flex items-start gap-3";
+            li.innerHTML = `
+                <span class="text-red-500 mt-1">&bull;</span>
+                <span class="text-slate-600">${risk}</span>
+            `;
+            infoRisksList.appendChild(li);
+        });
+
+        // Show the overlay
+        pollutantInfoOverlay.classList.remove('hidden');
+    }
+
+    // Function to hide the overlay
+    function hidePollutantInfo() {
+        pollutantInfoOverlay.classList.add('hidden');
+    }
+    
+    // Add event listeners to close the overlay
+    closeInfoBtn.addEventListener('click', hidePollutantInfo);
+    pollutantInfoOverlay.addEventListener('click', function(e) {
+        // Close if the click is on the dark backdrop, not the panel itself
+        if (e.target === pollutantInfoOverlay) {
+            hidePollutantInfo();
+        }
+    });
+
+    // --- END: NEW OVERLAY LOGIC ---
+
+
+    // MODIFICATION to your existing pollutant selector handler
+    document.getElementById('pollutant-selector').addEventListener('click', function(e) {
+        const infoIcon = e.target.closest('.fa-info-circle');
+        
+        // --- ADD THIS 'if' BLOCK ---
+        if (infoIcon) {
+            e.stopPropagation(); // Prevents the button click from firing
+            const parentButton = infoIcon.closest('.pollutant-btn');
+            const pollutantKey = parentButton.dataset.pollutant;
+            
+            // Fetch data (if needed) and then display the overlay
+            fetchPollutantInfo().then(() => {
+                displayPollutantInfo(pollutantKey);
+            });
+            return; // Stop further execution
+        }
+        // --- END OF ADDED BLOCK ---
+
+        // The rest of the function remains the same
+        let targetButton = e.target.closest('.pollutant-btn');
+        if (targetButton) {
+            activePollutant = targetButton.dataset.pollutant;
+            
+            this.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            targetButton.classList.add('active');
+
+            updateDashboard(activePollutant);
+        }
+    });
+// --- ADDED CODE START: NOTIFICATION LOGIC ---
+
+// Get references to notification elements
+const alertsBtn = document.getElementById('alerts-btn');
+const notificationOverlay = document.getElementById('notification-overlay');
+const notificationPanel = document.getElementById('notification-panel');
+const notificationBackdrop = document.getElementById('notification-backdrop');
+const closeNotificationBtn = document.getElementById('close-notification-btn');
+const alertDot = document.getElementById('alert-dot');
+const notificationList = document.getElementById('notification-list');
+
+// Function to fetch notification data
+function fetchNotifications() {
+    fetch(`/api/notifications`)
+        .then(response => response.json())
+        .then(data => {
+            notificationList.innerHTML = ''; // Clear previous/loading state
+
+            if (data.alerts && data.alerts.length > 0) {
+                // If there are alerts, show the dot and populate the list
+                alertDot.classList.remove('hidden');
+
+                data.alerts.forEach(alert => {
+                    const li = document.createElement('li');
+                    li.className = "flex items-start gap-3 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg";
+                    li.innerHTML = `
+                        <div class="flex-shrink-0 w-6 h-6 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mt-1">
+                            <i class="fas fa-exclamation-triangle text-sm"></i>
+                        </div>
+                        <span class="text-slate-700">${alert}</span>
+                    `;
+                    notificationList.appendChild(li);
+                });
+
+            } else {
+                // If no alerts, hide the dot and show a message
+                alertDot.classList.add('hidden');
+                const li = document.createElement('li');
+                li.className = "p-4 text-center text-slate-500";
+                li.innerHTML = `
+                    <div class="flex flex-col items-center gap-3">
+                        <i class="far fa-check-circle text-3xl text-green-500"></i>
+                        <span>No new alerts. Air quality is good.</span>
+                    </div>
+                `;
+                notificationList.appendChild(li);
+            }
+        })
+        .catch(error => console.error('Error fetching notifications:', error));
+}
+
+// Functions to control the overlay
+const openNotifications = () => {
+    notificationOverlay.classList.remove('hidden');
+    // We use a timeout to allow the display property to apply before starting the transition
+    setTimeout(() => {
+        notificationPanel.classList.remove('translate-x-full');
+    }, 10); 
+};
+
+const closeNotifications = () => {
+    notificationPanel.classList.add('translate-x-full');
+    // Hide the overlay after the transition completes
+    setTimeout(() => {
+        notificationOverlay.classList.add('hidden');
+    }, 300); // This duration should match the CSS transition duration
+};
+
+// Event listeners for the overlay
+alertsBtn.addEventListener('click', openNotifications);
+closeNotificationBtn.addEventListener('click', closeNotifications);
+notificationBackdrop.addEventListener('click', closeNotifications);
+
+// --- ADDED CODE END: NOTIFICATION LOGIC ---
+
+            // Pollutant selector button handler
+            document.getElementById('pollutant-selector').addEventListener('click', function(e) {
+                // Ensure the click is on the button itself or its direct children (like the text or icon)
+                let targetButton = e.target.closest('.pollutant-btn');
+                if (targetButton) {
+                    activePollutant = targetButton.dataset.pollutant;
+                    
+                    // Update active button style
+                    this.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                    targetButton.classList.add('active');
+
+                    updateDashboard(activePollutant);
+                }
+            });
+          // --- START: MODAL, MAP, AND FORM SUBMISSION LOGIC ---
+
+    // Get references to all modal elements
+    const changeLocationBtn = document.getElementById('change-location-btn');
+    const locationModal = document.getElementById('location-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const locationForm = document.getElementById('location-form'); 
+    
+    // New elements for view switching and map interaction
+    const modalOptionsView = document.getElementById('modal-options-view');
+    const modalMapView = document.getElementById('modal-map-view');
+    const selectOnMapBtn = document.getElementById('select-on-map-btn');
+    const backToOptionsBtn = document.getElementById('back-to-options-btn');
+    const confirmMapLocationBtn = document.getElementById('confirm-map-location-btn');
+
+    // Map-related variables
+    let map;
+    let mapMarker;
+    let selectedCoords; // To store coords from map click
+
+
+    const allowedPolygon = [
+        [-136, 55], [-46, 55], [-66, 19], [-111, 19], [-136, 55]
+    ];
+
+    // Your point-in-polygon check function (no changes needed here)
+    function isPointInPolygon(latitude, longitude, polygon) {
+        let isInside = false;
+        const lat = parseFloat(latitude);
+        const lon = parseFloat(longitude);
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i][0], yi = polygon[i][1];
+            const xj = polygon[j][0], yj = polygon[j][1];
+            const intersect = ((yi > lat) !== (yj > lat))
+                && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+            if (intersect) isInside = !isInside;
+        }
+        return isInside;
+    }
+
+    // --- Map Initialization and Logic ---
+    function initializeMap() {
+        if (map) return; // Only initialize once
+
+        // Create the map centered on North America
+        map = L.map('map').setView([45, -100], 4);
+
+        // Add the base map layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Draw the allowed polygon area on the map
+        // Note: Leaflet expects [lat, lon], but your polygon is [lon, lat]. We must reverse it.
+        const leafletPolygon = allowedPolygon.map(p => [p[1], p[0]]); 
+        L.polygon(leafletPolygon, { color: 'blue', weight: 2, fillOpacity: 0.1 }).addTo(map);
+
+        // Handle map clicks
+        map.on('click', function(e) {
+            const { lat, lng } = e.latlng;
+            
+            // Check if the clicked point is inside the allowed area
+            if (isPointInPolygon(lat, lng, allowedPolygon)) {
+                // If it's inside, place/move the marker
+                if (!mapMarker) {
+                    mapMarker = L.marker(e.latlng).addTo(map);
+                } else {
+                    mapMarker.setLatLng(e.latlng);
+                }
+                // Store the valid coordinates and enable the confirm button
+                selectedCoords = { lat: lat.toFixed(4), lon: lng.toFixed(4) };
+                confirmMapLocationBtn.disabled = false; 
+            } else {
+                // If outside, show an alert
+                alert('The selected location is outside the allowed operational area. Please click inside the blue polygon.');
+            }
+        });
+    }
+
+
+    // --- Modal Control and Event Listeners ---
+    
+    const openModal = () => locationModal.classList.remove('hidden');
+    
+    const closeModal = () => {
+        locationModal.classList.add('hidden');
+        // Reset modal to its initial state when closing
+        modalMapView.classList.add('hidden');
+        modalOptionsView.classList.remove('hidden');
+        if (mapMarker) {
+            mapMarker.remove();
+            mapMarker = null;
+        }
+        confirmMapLocationBtn.disabled = true;
+        selectedCoords = null;
+    };
+    
+    changeLocationBtn.addEventListener('click', openModal);
+    closeModalBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
+
+    // Event listener to switch to the map view
+    selectOnMapBtn.addEventListener('click', () => {
+        modalOptionsView.classList.add('hidden');
+        modalMapView.classList.remove('hidden');
+        
+        initializeMap();
+
+        // IMPORTANT: Tell Leaflet to recalculate its size after being displayed
+        setTimeout(() => map.invalidateSize(), 10);
+    });
+
+    // Event listener to switch back to the options view
+    backToOptionsBtn.addEventListener('click', () => {
+        modalMapView.classList.add('hidden');
+        modalOptionsView.classList.remove('hidden');
+    });
+
+    // Event listener for the map's confirm button
+    // Event listener for the map's confirm button
+confirmMapLocationBtn.addEventListener('click', () => {
+    if (selectedCoords) {
+        showLoadingState(); // Call the loading function here
+        fetchLocationData('update', selectedCoords.lat, selectedCoords.lon);
+        closeModal();
+    }
+});
+
+    // Event listener for the coordinate input form submission
+    locationForm.addEventListener('submit', function(event) {
+        event.preventDefault(); 
+        const latInput = document.getElementById('latitude').value;
+        const lonInput = document.getElementById('longitude').value;
+        
+        if (latInput && lonInput) {
+            if (isPointInPolygon(latInput, lonInput, allowedPolygon)) {
+                showLoadingState(); // Call the loading function here
+                fetchLocationData('update', latInput, lonInput);
+                closeModal(); 
+            } else {
+                alert('The entered location is outside the allowed operational area. Please enter different coordinates.');
+            }
+        } else {
+            alert('Please enter both latitude and longitude.');
+        }
+    });
+
+// --- END: MODAL, MAP, AND FORM SUBMISSION LOGIC ---
+        });
+    </script>
+    <div id="location-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div id="modal-backdrop" class="absolute inset-0 bg-slate-800 bg-opacity-60 backdrop-blur-sm"></div>
+
+    <div class="relative bg-white w-full max-w-3xl rounded-xl shadow-2xl p-8 transform transition-all">
+        <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors z-10">
+            <i class="fas fa-times fa-lg"></i>
+        </button>
+
+        <div id="modal-options-view">
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold text-slate-800">Change Location</h2>
+                <p class="text-slate-500 mt-1">Choose your preferred method to set a new location.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="select-on-map-btn" class="cursor-pointer group p-6 border-2 border-slate-200 rounded-lg text-center hover:border-sky-500 hover:bg-sky-50 transition-all duration-300">
+                    <i class="fas fa-map-marked-alt text-4xl text-sky-500 mb-4 group-hover:scale-110 transition-transform"></i>
+                    <h3 class="text-lg font-semibold text-slate-700">Select on Map</h3>
+                    <p class="text-sm text-slate-500 mt-1">Click to open an interactive map and pinpoint your location.</p>
+                </div>
+
+                <div class="p-6 border-2 border-slate-200 rounded-lg">
+                     <div class="text-center mb-4">
+                        <i class="fas fa-keyboard text-4xl text-sky-500 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-slate-700">Enter Coordinates</h3>
+                    </div>
+                    <form id="location-form" class="space-y-4">
+                        <div>
+                            <label for="latitude" class="text-sm font-medium text-slate-600">Latitude</label>
+                            <input type="text" id="latitude" placeholder="e.g., 40.7128" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label for="longitude" class="text-sm font-medium text-slate-600">Longitude</label>
+                            <input type="text" id="longitude" placeholder="e.g., -74.0060" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <button type="submit" class="w-full bg-sky-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-600 transition-colors">
+                            Update Location
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-map-view" class="hidden">
+             <div class="mb-4 text-left">
+                <h2 class="text-2xl font-bold text-slate-800">Pinpoint Location</h2>
+                <p class="text-slate-500 mt-1">Click on the map to place a marker inside the allowed area.</p>
+            </div>
+            <div id="map"></div>
+            <div class="flex items-center justify-end gap-3 mt-4">
+                <button id="back-to-options-btn" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">Back</button>
+                <button id="confirm-map-location-btn" class="px-4 py-2 text-sm font-semibold text-white bg-sky-500 rounded-md hover:bg-sky-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed" disabled>
+                    Confirm Location
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="notification-overlay" class="fixed inset-0 z-50 flex justify-end hidden">
+    <div id="notification-backdrop" class="absolute inset-0 bg-black bg-opacity-20"></div>
+
+    <div id="notification-panel" class="relative z-10 w-full max-w-sm h-full bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-slate-800">Notifications</h2>
+            <button id="close-notification-btn" class="text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fas fa-times fa-lg"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4">
+            <ul id="notification-list" class="space-y-3">
+                <li class="p-4 text-center text-slate-500">
+                    Checking for alerts...
+                </li>
+            </ul>
+        </div>
+        
+        <div class="p-3 text-center border-t border-gray-200">
+            <p class="text-xs text-slate-400">Alerts are based on current conditions.</p>
+        </div>
+    </div>
+</div>
+<div id="pollutant-info-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div id="pollutant-info-panel" class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative">
+        <button id="close-info-btn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+
+        <div>
+            <h2 id="info-pollutant-title" class="text-2xl font-bold text-slate-800">Pollutant Name</h2>
+            <p id="info-pollutant-name" class="text-slate-500 mb-5">Full pollutant name</p>
+            
+            <h3 class="text-lg font-semibold text-slate-700 mb-3">Health Risks:</h3>
+            <ul id="info-health-risks" class="space-y-3">
+                <li class="flex items-start gap-3">
+                    <span class="text-red-500 mt-1">&bull;</span>
+                    <span class="text-slate-600">Loading risk information...</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>
+

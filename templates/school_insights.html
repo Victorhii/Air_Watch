@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirWatch Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        /* Add this style to ensure the map displays correctly */
+        #map { height: 450px; border-radius: 0.5rem; }
+    </style>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #334155; /* Default text color */
+        }
+        .main-content {
+            background-color: #f8fafc;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+        
+        /* Top Navigation Links */
+        .top-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            color: #475569;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .top-nav-link.active {
+            background-color: #e0f2fe; /* Light blue background */
+            color: #0ea5e9; /* Sky blue text */
+            font-weight: 600;
+        }
+        .top-nav-link:hover:not(.active) {
+            background-color: #f0f4f8; /* Light gray on hover */
+        }
+
+        .header-button {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 0.75rem 1.25rem; /* Slightly bigger padding */
+            border-radius: 0.5rem;
+            color: #475569;
+            font-size: 0.95rem; /* Slightly bigger font */
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .header-button:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+<header class="bg-white border-b border-gray-200 flex items-center justify-between px-6 py-3 sticky top-0 z-10">
+    <div class="flex items-center gap-3">
+        <i class="fas fa-wind text-2xl text-sky-500"></i>
+        <h1 class="text-xl font-bold text-slate-800">AirWatch</h1>
+    </div>
+
+    <nav class="flex items-center space-x-2">
+        <a href="/" class="top-nav-link">
+            <i class="fas fa-tachometer-alt mr-2"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="top-nav-link active">
+            <i class="fas fa-chart-line mr-2"></i>
+            <span>School Insights</span>
+        </a>
+        <a href="#" class="top-nav-link">
+            <i class="fas fa-map-marked-alt mr-2"></i>
+            <span>Visualized Map</span>
+        </a>
+    </nav>
+</header>
+
+<main class="flex-grow p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-graduation-cap text-2xl text-sky-500"></i>
+                <h2 class="text-2xl font-bold text-slate-800">School Insight</h2>
+            </div>
+            <p class="text-slate-500 mt-1">Plan outdoor activities based on air quality forecasts and school schedules</p>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="far fa-calendar-alt text-slate-500"></i>
+                <h3 class="text-md font-medium text-slate-600">Select Day</h3>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                {% for day in days %}
+                    {% if day == initial_day %}
+                        <button class="px-4 py-2 text-sm font-semibold rounded-md bg-sky-500 text-white shadow-sm">{{ day }}</button>
+                    {% else %}
+                        <button class="px-4 py-2 text-sm font-medium rounded-md bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 transition-colors">{{ day }}</button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+    <div class="lg:col-span-3 flex flex-col gap-6">
+
+        <div class="card p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fas fa-chart-line text-sky-500"></i>
+                <h3 class="text-lg font-semibold text-slate-800">Air Quality Forecast</h3>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <p class="text-sm text-slate-500">PM2.5</p>
+                    <p id="pm25-value" class="text-3xl font-bold text-slate-800 mt-1">{{ initial_forecast.pm25 }}</p>
+                    <p class="text-xs text-slate-400">μg/m³</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-slate-500">NO₂</p>
+                    <p id="no2-value" class="text-3xl font-bold text-slate-800 mt-1">{{ initial_forecast.no2 }}</p>
+                    <p class="text-xs text-slate-400">x 10¹⁶ molec/cm²</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-slate-500">O₃</p>
+                    <p id="o3-value" class="text-3xl font-bold text-slate-800 mt-1">{{ initial_forecast.o3 }}</p>
+                    <p class="text-xs text-slate-400">DU</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-slate-500">HCHO</p>
+                    <p id="hcho-value" class="text-3xl font-bold text-slate-800 mt-1">{{ initial_forecast.hcho }}</p>
+                    <p class="text-xs text-slate-400">x 10¹⁶ molec/cm²</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="recommendation-card" class="card p-6 border-l-4 {{ initial_recommendation.style.border_color }} {{ initial_recommendation.style.bg_color }}">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <i id="rec-icon" class="text-xl {{ initial_recommendation.icon_class }} {{ initial_recommendation.style.icon_color }}"></i>
+                    <h3 class="text-lg font-semibold text-slate-800">Recommendation</h3>
+                </div>
+                <a id="rec-status" href="#" class="text-xs font-medium text-slate-500 hover:text-slate-700">{{ initial_recommendation.status_text }}</a>
+            </div>
+            <div class="mt-3 pl-8">
+                <p id="rec-title" class="font-semibold {{ initial_recommendation.style.text_color }}">{{ initial_recommendation.title }}</p>
+                <p id="rec-description" class="text-sm text-slate-600 mt-1">{{ initial_recommendation.description }}</p>
+            </div>
+        </div>
+
+    </div> <div id="schedule-card" class="lg:col-span-2 card p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="schedule-title" class="text-lg font-semibold text-slate-800">Schedule for {{ initial_day }}</h3>
+            <span id="activity-count" class="bg-teal-100 text-teal-800 text-xs font-medium px-3 py-1 rounded-full">
+                {{ initial_schedule|length }} {% if initial_schedule|length == 1 %}Activity{% else %}Activities{% endif %}
+            </span>
+        </div>
+        <div id="schedule-list" class="space-y-3">
+            {% for activity in initial_schedule %}
+            <div class="bg-slate-50/70 p-4 rounded-lg flex justify-between items-center transition-all hover:shadow-md hover:bg-white">
+                <div>
+                    <p class="font-semibold text-slate-800">{{ activity.name }}</p>
+                    <p class="text-sm text-slate-500">{{ activity.time }}</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-semibold">
+                    {% if activity.category == 'PE' %}
+                        <span class="bg-sky-100 text-sky-800 px-2 py-1 rounded-md">{{ activity.category }}</span>
+                    {% else %}
+                        <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-md">{{ activity.category }}</span>
+                    {% endif %}
+                    <span class="bg-slate-200 text-slate-600 px-2 py-1 rounded-md">{{ activity.location }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+</div>
+
+            <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dayButtons = document.querySelectorAll('.flex-wrap.gap-2 button');
+        
+        dayButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const day = this.textContent;
+                dayButtons.forEach(btn => {
+                    btn.classList.remove('bg-sky-500', 'text-white');
+                    btn.classList.add('bg-white', 'text-slate-700');
+                });
+                this.classList.add('bg-sky-500', 'text-white');
+                this.classList.remove('bg-white', 'text-slate-700');
+                fetchDataForDay(day);
+            });
+        });
+
+        async function fetchDataForDay(day) {
+            try {
+                const response = await fetch(`/schedule/${day}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+
+                renderSchedule(day, data.schedule);
+                renderForecast(data.forecast);
+                renderRecommendation(data.recommendation); // NEW function call
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+            }
+        }
+
+        // NEW FUNCTION: Updates the recommendation card UI
+        function renderRecommendation(rec) {
+            const card = document.getElementById('recommendation-card');
+            const icon = document.getElementById('rec-icon');
+            const status = document.getElementById('rec-status');
+            const title = document.getElementById('rec-title');
+            const description = document.getElementById('rec-description');
+
+            // Update text content
+            status.textContent = rec.status_text;
+            title.textContent = rec.title;
+            description.textContent = rec.description;
+
+            // Define all possible style classes
+            const all_styles = {
+                borders: ['border-green-500', 'border-yellow-500', 'border-red-500'],
+                bgs: ['bg-green-50/50', 'bg-yellow-50/50', 'bg-red-50/50'],
+                icons: ['text-green-500', 'text-yellow-500', 'text-red-500'],
+                texts: ['text-green-800', 'text-yellow-800', 'text-red-800']
+            };
+
+            // Reset classes and then add the new ones
+            card.classList.remove(...all_styles.borders, ...all_styles.bgs);
+            card.classList.add(rec.style.border_color, rec.style.bg_color);
+
+            icon.className = `text-xl ${rec.icon_class} ${rec.style.icon_color}`;
+            
+            title.classList.remove(...all_styles.texts);
+            title.classList.add(rec.style.text_color);
+        }
+
+        function renderForecast(forecast) {
+            document.getElementById('pm25-value').textContent = forecast.pm25 || 'N/A';
+            document.getElementById('no2-value').textContent = forecast.no2 || 'N/A';
+            document.getElementById('o3-value').textContent = forecast.o3 || 'N/A';
+            document.getElementById('hcho-value').textContent = forecast.hcho || 'N/A';
+        }
+
+        function renderSchedule(day, activities) {
+            const titleEl = document.getElementById('schedule-title');
+            const countEl = document.getElementById('activity-count');
+            const listEl = document.getElementById('schedule-list');
+
+            titleEl.textContent = `Schedule for ${day}`;
+            const activityText = activities.length === 1 ? 'Activity' : 'Activities';
+            countEl.textContent = `${activities.length} ${activityText}`;
+            listEl.innerHTML = ''; 
+
+            if (activities.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-500 text-center py-4">No activities scheduled for this day.</p>';
+                return;
+            }
+
+            activities.forEach(activity => {
+                const categoryBadge = activity.category === 'PE'
+                    ? `<span class="bg-sky-100 text-sky-800 px-2 py-1 rounded-md">${activity.category}</span>`
+                    : `<span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-md">${activity.category}</span>`;
+                const activityHTML = `<div class="bg-slate-50/70 p-4 rounded-lg flex justify-between items-center transition-all hover:shadow-md hover:bg-white"><div><p class="font-semibold text-slate-800">${activity.name}</p><p class="text-sm text-slate-500">${activity.time}</p></div><div class="flex items-center gap-2 text-xs font-semibold">${categoryBadge}<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded-md">${activity.location}</span></div></div>`;
+                listEl.insertAdjacentHTML('beforeend', activityHTML);
+            });
+        }
+    });
+</script>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

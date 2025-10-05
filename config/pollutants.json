@@ -1,0 +1,52 @@
+{
+  "pollutant_levels": {
+    "PM2.5": {
+      "name": "Particulate Matter 2.5µm",
+      "unit": "µg/m³",
+      "levels": {
+        "Good": { "min": 0.0, "max": 12.0 },
+        "Moderate": { "min": 12.1, "max": 35.4 },
+        "Unhealthy_for_Sensitive_Groups": { "min": 35.5, "max": 55.4 },
+        "Unhealthy": { "min": 55.5, "max": 150.4 },
+        "Very_Unhealthy": { "min": 150.5, "max": 250.4 },
+        "Hazardous": { "min": 250.5, "max": null }
+      }
+    },
+    "O3": {
+      "name": "Tropospheric Ozone",
+      "unit": "DU",
+      "levels": {
+        "Good": { "min": 0, "max": 54 },
+        "Moderate": { "min": 55, "max": 70 },
+        "Unhealthy_for_Sensitive_Groups": { "min": 71, "max": 85 },
+        "Unhealthy": { "min": 86, "max": 105 },
+        "Very_Unhealthy": { "min": 106, "max": 200 },
+        "Hazardous": { "min": 201, "max": null }
+      }
+    },
+    "HCHO": {
+      "name": "Formaldehyde Vertical Column",
+      "unit": "x 10¹⁶ molecules/cm²",
+      "levels": {
+        "Good": { "min": 0.0, "max": 0.4 },
+        "Moderate": { "min": 0.41, "max": 0.8 },
+        "Unhealthy_for_Sensitive_Groups": { "min": 0.81, "max": 1.2 },
+        "Unhealthy": { "min": 1.21, "max": 2.0 },
+        "Very_Unhealthy": { "min": 2.01, "max": 3.0 },
+        "Hazardous": { "min": 3.01, "max": null }
+      }
+    },
+    "NO2": {
+      "name": "Tropospheric Nitrogen Dioxide",
+      "unit": "x 10¹⁶ molecules/cm²",
+      "levels": {
+        "Good": { "min": 0.0, "max": 0.1 },
+        "Moderate": { "min": 0.11, "max": 0.3 },
+        "Unhealthy_for_Sensitive_Groups": { "min": 0.31, "max": 0.6 },
+        "Unhealthy": { "min": 0.61, "max": 1.0 },
+        "Very_Unhealthy": { "min": 1.01, "max": 2.0 },
+        "Hazardous": { "min": 2.01, "max": null }
+      }
+    }
+  }
+}

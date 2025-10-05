@@ -1,0 +1,38 @@
+{
+  "excellent": {
+    "title": "Excellent air quality for outdoor activities",
+    "description": "Perfect conditions for all PE classes and outdoor activities. Students can participate fully without restrictions.",
+    "status_text": "Clear",
+    "icon_class": "fas fa-check-circle",
+    "style": {
+      "text_color": "text-green-800",
+      "icon_color": "text-green-500",
+      "border_color": "border-green-500",
+      "bg_color": "bg-green-50/50"
+    }
+  },
+  "moderate": {
+    "title": "Moderate air quality - proceed with care",
+    "description": "Most activities can proceed normally. Monitor sensitive students and consider shorter outdoor sessions for high-intensity activities.",
+    "status_text": "Caution",
+    "icon_class": "fas fa-exclamation-triangle",
+    "style": {
+      "text_color": "text-yellow-800",
+      "icon_color": "text-yellow-500",
+      "border_color": "border-yellow-500",
+      "bg_color": "bg-yellow-50/50"
+    }
+  },
+  "poor": {
+    "title": "Poor air quality - move activities indoors",
+    "description": "Outdoor activities are not recommended, especially for sensitive groups. Relocate all PE classes and extracurriculars indoors.",
+    "status_text": "Warning",
+    "icon_class": "fas fa-times-circle",
+    "style": {
+      "text_color": "text-red-800",
+      "icon_color": "text-red-500",
+      "border_color": "border-red-500",
+      "bg_color": "bg-red-50/50"
+    }
+  }
+}

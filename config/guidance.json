@@ -1,0 +1,32 @@
+{
+  "Good": [
+    "Proceed with all outdoor activities, including PE and recess, as normal.",
+    "Encourage students to enjoy the fresh air and vigorous play.",
+    "Open windows to ventilate classrooms and school buildings."
+  ],
+  "Moderate": [
+    "Monitor students with asthma or other respiratory conditions during outdoor PE and recess.",
+    "Ensure rescue inhalers are readily accessible for sensitive students.",
+    "Advise sensitive students to listen to their bodies and opt for less intense activities if needed."
+  ],
+  "Unhealthy for Sensitive Groups": [
+    "Move PE and recess indoors for students with respiratory or heart conditions.",
+    "Reduce the intensity and duration of outdoor activities for all other students.",
+    "Keep rescue medications handy and ensure at-risk students are clearly identified."
+  ],
+  "Unhealthy": [
+    "Cancel all outdoor PE and recess; substitute with indoor, low-intensity activities.",
+    "Close all windows and doors to keep polluted air out.",
+    "Teachers should monitor all students for symptoms like coughing or shortness of breath."
+  ],
+  "Very Unhealthy": [
+    "Cancel all outdoor activities; all PE and recess must be indoors and low-exortion.",
+    "Keep students indoors at all times and ensure activity levels are low.",
+    "Run air purifiers in classrooms and common areas if available."
+  ],
+  "Hazardous": [
+    "Everyone must avoid all outdoor physical activity; all activities are indoors.",
+    "Keep the school building sealed by closing all windows and doors.",
+    "Monitor everyone for respiratory distress; consider school closure if conditions persist."
+  ]
+}

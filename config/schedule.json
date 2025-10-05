@@ -1,0 +1,112 @@
+{
+  "monday": [
+    {
+      "name": "Physical Education",
+      "time": "08:00 - 09:00",
+      "category": "PE",
+      "location": "Outdoor Field"
+    },
+    {
+      "name": "Soccer Practice",
+      "time": "15:00 - 16:30",
+      "category": "Extracurricular",
+      "location": "Sports Ground"
+    },
+    {
+      "name": "Track & Field",
+      "time": "16:30 - 18:00",
+      "category": "Extracurricular",
+      "location": "Athletic Track"
+    }
+  ],
+  "tuesday": [
+    {
+      "name": "Morning PE",
+      "time": "09:00 - 10:00",
+      "category": "PE",
+      "location": "Gymnasium"
+    },
+    {
+      "name": "Basketball Club",
+      "time": "14:00 - 15:30",
+      "category": "Extracurricular",
+      "location": "Basketball Court"
+    }
+  ],
+  "wednesday": [
+    {
+      "name": "Physical Education",
+      "time": "08:30 - 09:30",
+      "category": "PE",
+      "location": "Outdoor Field"
+    },
+    {
+      "name": "Swimming Team",
+      "time": "15:00 - 16:30",
+      "category": "Extracurricular",
+      "location": "Pool Area"
+    },
+    {
+      "name": "Tennis Club",
+      "time": "16:30 - 18:00",
+      "category": "Extracurricular",
+      "location": "Tennis Courts"
+    }
+  ],
+  "thursday": [
+    {
+      "name": "PE Class",
+      "time": "10:00 - 11:00",
+      "category": "PE",
+      "location": "Outdoor Field"
+    },
+    {
+      "name": "Volleyball Practice",
+      "time": "15:00 - 16:30",
+      "category": "Extracurricular",
+      "location": "Sports Hall"
+    }
+  ],
+  "friday": [
+    {
+      "name": "Physical Education",
+      "time": "08:00 - 09:00",
+      "category": "PE",
+      "location": "Outdoor Field"
+    },
+    {
+      "name": "Football Club",
+      "time": "14:00 - 15:30",
+      "category": "Extracurricular",
+      "location": "Sports Ground"
+    },
+    {
+      "name": "Running Club",
+      "time": "15:30 - 17:00",
+      "category": "Extracurricular",
+      "location": "Athletic Track"
+    }
+  ],
+  "saturday": [
+    {
+      "name": "Weekend Sports Camp",
+      "time": "09:00 - 11:00",
+      "category": "Extracurricular",
+      "location": "Sports Complex"
+    },
+    {
+      "name": "Cycling Club",
+      "time": "14:00 - 16:00",
+      "category": "Extracurricular",
+      "location": "Campus Grounds"
+    }
+  ],
+  "sunday": [
+    {
+      "name": "Yoga & Wellness",
+      "time": "10:00 - 12:00",
+      "category": "Extracurricular",
+      "location": "Wellness Center"
+    }
+  ]
+}

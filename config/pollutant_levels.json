@@ -1,0 +1,50 @@
+{
+    "o3": {
+      "name": "Tropospheric Ozone",
+      "unit": "DU",
+      "levels": {
+        "Good": { "min": 0, "max": 54, "alert": "", "suggestion": "" },
+        "Moderate": { "min": 55, "max": 70, "alert": "Ozone levels are moderate.", "suggestion": "Sensitive students, like those with asthma, should reduce prolonged outdoor exertion." },
+        "Unhealthy for Sensitive Groups": { "min": 71, "max": 85, "alert": "Ozone levels are unhealthy for sensitive groups.", "suggestion": "Asthmatic students should avoid outdoor activities. Consider moving PE classes indoors." },
+        "Unhealthy": { "min": 86, "max": 105, "alert": "Ozone has reached unhealthy levels for everyone.", "suggestion": "Recess and physical education should be held indoors. Limit time outside for all students." },
+        "Very Unhealthy": { "min": 106, "max": 200, "alert": "Warning: Ozone levels are very unhealthy.", "suggestion": "All outdoor activities should be cancelled. Keep students indoors with windows closed." },
+        "Hazardous": { "min": 201, "max": 999, "alert": "Hazardous ozone levels detected.", "suggestion": "Avoid all outdoor exposure. Consider early dismissal if conditions worsen." }
+      }
+    },
+    "hcho": {
+      "name": "Formaldehyde",
+      "unit": "x 10¹⁶ molecules/cm²",
+      "levels": {
+        "Good": { "min": 0.0, "max": 0.4, "alert": "", "suggestion": "" },
+        "Moderate": { "min": 0.41, "max": 0.8, "alert": "Formaldehyde levels are moderate.", "suggestion": "Ensure classrooms are well-ventilated by opening windows if outside air is clean." },
+        "Unhealthy for Sensitive Groups": { "min": 0.81, "max": 1.2, "alert": "Formaldehyde is unhealthy for sensitive groups.", "suggestion": "Students with chemical sensitivities may experience irritation. Monitor them closely." },
+        "Unhealthy": { "min": 1.21, "max": 2.0, "alert": "Unhealthy levels of Formaldehyde detected.", "suggestion": "Increase ventilation in all school areas. Postpone science labs involving chemicals." },
+        "Very Unhealthy": { "min": 2.01, "max": 3.0, "alert": "Warning: Very unhealthy Formaldehyde levels.", "suggestion": "Run air purifiers if available. Limit time in newly furnished or painted rooms." },
+        "Hazardous": { "min": 3.01, "max": 999, "alert": "Hazardous Formaldehyde levels detected.", "suggestion": "Identify and air out the source. Consider evacuating the affected area if necessary." }
+      }
+    },
+    "no2": {
+      "name": "Nitrogen Dioxide",
+      "unit": "x 10¹⁶ molecules/cm²",
+      "levels": {
+        "Good": { "min": 0.0, "max": 0.1, "alert": "", "suggestion": "" },
+        "Moderate": { "min": 0.11, "max": 0.3, "alert": "Nitrogen Dioxide levels are moderate.", "suggestion": "Reduce strenuous outdoor activities, especially near roads or parking lots." },
+        "Unhealthy for Sensitive Groups": { "min": 0.31, "max": 0.6, "alert": "NO2 is unhealthy for sensitive groups.", "suggestion": "Students with respiratory conditions should remain indoors during peak traffic hours." },
+        "Unhealthy": { "min": 0.61, "max": 1.0, "alert": "Unhealthy Nitrogen Dioxide levels detected.", "suggestion": "Cancel all outdoor activities. Advise parents to avoid idling cars during pickup." },
+        "Very Unhealthy": { "min": 1.01, "max": 2.0, "alert": "Warning: Very unhealthy NO2 levels.", "suggestion": "Keep students indoors with windows closed. Ensure ventilation systems are not drawing in outside air." },
+        "Hazardous": { "min": 2.01, "max": 999, "alert": "Hazardous Nitrogen Dioxide levels detected.", "suggestion": "Consider school closure until air quality improves significantly." }
+      }
+    },
+    "pm25": {
+        "name": "Fine Particulate Matter",
+        "unit": "µg/m³",
+        "levels": {
+          "Good": { "min": 0, "max": 12.0, "alert": "", "suggestion": "" },
+          "Moderate": { "min": 12.1, "max": 35.4, "alert": "Particulate matter levels are moderate.", "suggestion": "Sensitive students may experience respiratory symptoms. Limit heavy outdoor exertion." },
+          "Unhealthy for Sensitive Groups": { "min": 35.5, "max": 55.4, "alert": "PM2.5 is unhealthy for sensitive groups.", "suggestion": "Keep students with heart or lung disease indoors. All others should reduce outdoor activity." },
+          "Unhealthy": { "min": 55.5, "max": 150.4, "alert": "Unhealthy levels of particulate matter detected.", "suggestion": "Move all student activities, including lunch and recess, indoors. Close windows." },
+          "Very Unhealthy": { "min": 150.5, "max": 250.4, "alert": "Warning: Very unhealthy PM2.5 levels.", "suggestion": "Cancel all outdoor events. Run air filtration systems on high." },
+          "Hazardous": { "min": 250.5, "max": 999, "alert": "Hazardous particulate matter levels detected.", "suggestion": "School should be closed. All students and staff should remain indoors and avoid exposure." }
+        }
+      }
+  }
